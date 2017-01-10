@@ -8,7 +8,7 @@ var resolve = path.resolve
 var _ = require('lodash')
 var glob = require('glob')
 
-function microloader (paths, iterator) {
+function microloader (paths, shouldObjectify, keepExtension) {
   if (!paths) {
     throw new Error('Error loading files; invalid "paths" argument', paths)
   }
@@ -21,18 +21,20 @@ function microloader (paths, iterator) {
     paths = [paths]
   }
 
-  iterator = iterator || defaultIterator
+  var files = []
 
-  if (iterator && typeof iterator !== 'function') {
-    throw new Error('Error loading files; invalid "iterator" argument', iterator)
+  paths.forEach(function (path) {
+    files = files.concat(lookup(path))
+  })
+
+  if (!shouldObjectify) {
+    return files
   }
 
   var ret = {}
 
-  paths.forEach(function (path) {
-    lookup(path).forEach((item) => {
-      iterator(item, ret)
-    })
+  files.forEach(function (file) {
+    objectify(file, ret, keepExtension)
   })
 
   return ret
@@ -87,9 +89,13 @@ function lookup (path) {
   return files
 }
 
-function defaultIterator (file, files) {
+function objectify (file, files, keepExtension) {
   var chunks = file.split(path.sep)
-  chunks[chunks.length - 1] = path.basename(chunks[chunks.length - 1], path.extname(chunks[chunks.length - 1]))
+
+  if (!keepExtension) {
+    chunks[chunks.length - 1] = path.basename(chunks[chunks.length - 1], path.extname(chunks[chunks.length - 1]))
+  }
+
   var setPath = ''
 
   chunks.forEach((chunk) => {
