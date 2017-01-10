@@ -7,8 +7,10 @@ var basename = path.basename
 var resolve = path.resolve
 var _ = require('lodash')
 var glob = require('glob')
+var cwd = require('./utils/getCwd')()
+var cwdLength = cwd.length + 1
 
-function microloader (paths, shouldObjectify, keepExtension) {
+function microloader (paths, options) {
   if (!paths) {
     throw new Error('Error loading files; invalid "paths" argument', paths)
   }
@@ -21,34 +23,50 @@ function microloader (paths, shouldObjectify, keepExtension) {
     paths = [paths]
   }
 
+  var parsedOptions = {
+    objectify: !!_.get(options, 'objectify'),
+    keepExtension: !!_.get(options, 'keepExtension'),
+    absolute: !!_.get(options, 'absolute')
+  }
+
   var files = []
 
   paths.forEach(function (path) {
-    files = files.concat(lookup(path))
+    files = files.concat(lookup(path, parsedOptions))
   })
 
-  if (!shouldObjectify) {
+  if (!parsedOptions.absolute) {
+    files = _.map(files, function (file) {
+      return resolve(cwd, file).substr(cwdLength)
+    })
+  }
+
+  if (!parsedOptions.objectify) {
     return files
   }
 
   var ret = {}
 
   files.forEach(function (file) {
-    objectify(file, ret, keepExtension)
+    objectify(file, ret, parsedOptions)
   })
 
   return ret
 }
 
-function lookup (path) {
+function lookup (rawPath, options) {
   var files = []
   var re = new RegExp('\\.js$')
+  var path = resolve(cwd, rawPath)
 
   if (!exists(path)) {
     if (exists(path + '.js')) {
       path += '.js'
     } else {
-      files = glob.sync(path)
+      files = glob.sync(rawPath, {
+        cwd: cwd,
+        absolute: options.absolute
+      })
 
       if (!files.length) {
         throw new Error('Cannot resolve path "' + path + '"')
@@ -89,10 +107,10 @@ function lookup (path) {
   return files
 }
 
-function objectify (file, files, keepExtension) {
-  var chunks = file.split(path.sep)
+function objectify (file, files, options) {
+  var chunks = _.filter(file.split(path.sep))
 
-  if (!keepExtension) {
+  if (!options.keepExtension) {
     chunks[chunks.length - 1] = path.basename(chunks[chunks.length - 1], path.extname(chunks[chunks.length - 1]))
   }
 
@@ -102,7 +120,7 @@ function objectify (file, files, keepExtension) {
     setPath += '[\'' + chunk + '\']'
   })
 
-  var ex = require(resolve(file))
+  var ex = require(resolve(cwd, file))
 
   _.set(files, setPath, ex)
 }
