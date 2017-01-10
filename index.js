@@ -98,7 +98,7 @@ function objectify (file, files, keepExtension) {
 
   var setPath = ''
 
-  chunks.forEach((chunk) => {
+  chunks.forEach(function (chunk) {
     setPath += '[\'' + chunk + '\']'
   })
 
