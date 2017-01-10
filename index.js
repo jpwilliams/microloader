@@ -7,7 +7,7 @@ var basename = path.basename
 var resolve = path.resolve
 var _ = require('lodash')
 var glob = require('glob')
-var cwd = require('./utils/getCwd')()
+var cwd = process.cwd()
 var cwdLength = cwd.length + 1
 
 function microloader (paths, options) {
