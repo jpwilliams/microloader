@@ -1,7 +1,13 @@
-const path = require('path')
-const _ = require('lodash')
+module.exports = {
+  foo: 'bar'
+}
+
 const microloader = require('.')
 
-const files = microloader('!(node_modules)', true)
+const files = microloader('utils', {
+  objectify: false,
+  absolute: true,
+  keepExtension: false
+})
 
 console.log(files)
