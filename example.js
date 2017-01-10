@@ -4,9 +4,9 @@ module.exports = {
 
 const microloader = require('.')
 
-const files = microloader('utils', {
-  objectify: false,
-  absolute: true,
+const files = microloader('!(node_modules)', {
+  objectify: true,
+  absolute: false,
   keepExtension: false
 })
 
