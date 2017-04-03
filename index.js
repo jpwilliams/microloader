@@ -7,8 +7,6 @@ var basename = path.basename
 var resolve = path.resolve
 var _ = require('lodash')
 var glob = require('glob')
-var cwd = process.cwd()
-var cwdLength = cwd.length + 1
 
 function microloader (paths, options) {
   if (!paths) {
@@ -26,9 +24,15 @@ function microloader (paths, options) {
   var parsedOptions = {
     objectify: !!_.get(options, 'objectify'),
     keepExtension: !!_.get(options, 'keepExtension'),
-    absolute: !!_.get(options, 'absolute')
+    absolute: !!_.get(options, 'absolute'),
+    cwd: _.get(options, 'cwd')
   }
 
+  if (!parsedOptions.cwd) {
+    parsedOptions.cwd = process.cwd()
+  }
+
+  var cwdLength = parsedOptions.cwd.length + 1
   var files = []
 
   paths.forEach(function (path) {
@@ -37,7 +41,7 @@ function microloader (paths, options) {
 
   if (!parsedOptions.absolute) {
     files = _.map(files, function (file) {
-      return resolve(cwd, file).substr(cwdLength)
+      return resolve(parsedOptions.cwd, file).substr(cwdLength)
     })
   }
 
@@ -57,14 +61,14 @@ function microloader (paths, options) {
 function lookup (rawPath, options) {
   var files = []
   var re = new RegExp('\\.js$')
-  var path = resolve(cwd, rawPath)
+  var path = resolve(options.cwd, rawPath)
 
   if (!exists(path)) {
     if (exists(path + '.js')) {
       path += '.js'
     } else {
       files = glob.sync(rawPath, {
-        cwd: cwd,
+        cwd: options.cwd,
         absolute: options.absolute
       })
 
@@ -120,7 +124,7 @@ function objectify (file, files, options) {
     setPath += '[\'' + chunk + '\']'
   })
 
-  var ex = require(resolve(cwd, file))
+  var ex = require(resolve(options.cwd, file))
 
   _.set(files, setPath, ex)
 }
