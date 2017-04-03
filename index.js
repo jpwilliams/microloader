@@ -59,6 +59,7 @@ function microloader (paths, options) {
 }
 
 function lookup (rawPath, options) {
+  options = options || {}
   var files = []
   var re = new RegExp('\\.js$')
   var path = resolve(options.cwd, rawPath)
