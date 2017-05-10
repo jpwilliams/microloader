@@ -64,6 +64,10 @@ function lookup (rawPath, options) {
   var re = new RegExp('\\.js$')
   var path = resolve(options.cwd, rawPath)
 
+  if (basename(path)[0] === '.') {
+    return []
+  }
+
   if (!exists(path)) {
     if (exists(path + '.js')) {
       path += '.js'
@@ -102,6 +106,8 @@ function lookup (rawPath, options) {
       files = files.concat(lookup(file))
     }
 
+    // we may not still need the .-prefix check now
+    // as it's done at the top of the function
     if (!stat.isFile() || !re.test(file) || basename(file)[0] === '.') {
       return
     }
