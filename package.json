@@ -1,6 +1,6 @@
 {
   "name": "microloader",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Load directories and files, doing with them what you want!",
   "main": "index.js",
   "scripts": {
