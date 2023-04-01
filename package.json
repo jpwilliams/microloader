@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/jpwilliams/microloader#readme",
   "dependencies": {
-    "glob": "^7.1.1",
+    "glob": "^9.3.2",
     "lodash": "^4.17.4"
   }
 }
